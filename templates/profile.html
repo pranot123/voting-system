@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center animate__animated animate__fadeInUp">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-white border-bottom border-light p-4 text-center">
+                <div class="mb-3">
+                    <span class="fa-stack fa-3x text-primary">
+                        <i class="fas fa-circle fa-stack-2x opacity-25"></i>
+                        <i class="fas fa-user-check fa-stack-1x"></i>
+                    </span>
+                </div>
+                <h2 class="fw-bold text-primary mb-1">Student Verification</h2>
+                <p class="text-muted">Please enter your details to verify against university records</p>
+            </div>
+            
+            <div class="card-body p-4 p-md-5">
+                <form id="verificationForm" onsubmit="handleVerification(event)">
+                    <div class="mb-4">
+                        <label for="prn" class="form-label text-uppercase text-muted small fw-bold">PRN Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-id-card text-primary"></i></span>
+                            <input type="text" class="form-control border-start-0 ps-0" id="prn" name="prn" 
+                                   placeholder="Enter 13-digit PRN" pattern="\d{13}" maxlength="13" required
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                        <div class="form-text">Must be exactly 13 numerical digits.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="name" class="form-label text-uppercase text-muted small fw-bold">Full Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-user text-primary"></i></span>
+                            <input type="text" class="form-control border-start-0 ps-0" id="name" name="name" 
+                                   placeholder="Enter your full name" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="mobile" class="form-label text-uppercase text-muted small fw-bold">Mobile Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-phone-alt text-primary"></i></span>
+                            <input type="tel" class="form-control border-start-0 ps-0" id="mobile" name="mobile" 
+                                   placeholder="Enter mobile number" pattern="[0-9]{10}" maxlength="10" required
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="mother_name" class="form-label text-uppercase text-muted small fw-bold">Mother's Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-female text-primary"></i></span>
+                            <input type="text" class="form-control border-start-0 ps-0" id="mother_name" name="mother_name" 
+                                   placeholder="Enter mother's name" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-5">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm py-3 fw-bold">
+                            Verify & Proceed <i class="fas fa-check-circle ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function handleVerification(event) {
+    event.preventDefault();
+    
+    const formData = {
+        prn: document.getElementById('prn').value,
+        name: document.getElementById('name').value,
+        mobile: document.getElementById('mobile').value,
+        mother_name: document.getElementById('mother_name').value
+    };
+    
+    // Show loading state
+    const btn = event.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Verifying...';
+    btn.disabled = true;
+
+    fetch('/api/verify_profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Success - Redirect
+            window.location.href = data.redirect;
+        } else {
+            // Error
+            alert(data.message || 'Verification failed');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred during verification');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+</script>
+{% endblock %}

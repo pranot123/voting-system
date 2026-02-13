@@ -1,0 +1,290 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="text-center mb-5 animate__animated animate__fadeInDown">
+            <h2 class="fw-bold text-primary"><i class="fas fa-university me-2"></i>DYP-UT ELECTION PORTAL</h2>
+            <p class="text-muted lead">Secure Voting System</p>
+        </div>
+
+        <div class="card shadow-lg animate__animated animate__fadeInUp">
+            <div class="card-header bg-white border-0 pt-4 pb-0">
+                <ul class="nav nav-pills nav-fill mb-3" id="pills-tab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active rounded-pill" id="pills-login-tab" data-bs-toggle="pill" data-bs-target="#pills-login" type="button" role="tab" aria-controls="pills-login" aria-selected="true">Login</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill" id="pills-signup-tab" data-bs-toggle="pill" data-bs-target="#pills-signup" type="button" role="tab" aria-controls="pills-signup" aria-selected="false">Signup</button>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card-body p-4 pt-2">
+                <div class="tab-content" id="pills-tabContent">
+                    <!-- Login Form -->
+                    <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="pills-login-tab">
+                        <form id="loginForm" onsubmit="handleLogin(event)">
+                            <div class="mb-3">
+                                <label for="login_email" class="form-label">Email Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fas fa-envelope text-primary"></i></span>
+                                    <input type="email" class="form-control" id="login_email" name="email" placeholder="student@example.com" required>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="login_password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fas fa-lock text-primary"></i></span>
+                                    <input type="password" class="form-control" id="login_password" name="password" placeholder="Enter Password" required>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">Login <i class="fas fa-sign-in-alt ms-2"></i></button>
+                                <div class="text-center my-2 text-muted">OR</div>
+                                <button type="button" class="btn btn-outline-danger btn-lg" onclick="handleGoogleLogin()">
+                                    <i class="fab fa-google me-2"></i> Sign in with Google
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Signup Form -->
+                    <div class="tab-pane fade" id="pills-signup" role="tabpanel" aria-labelledby="pills-signup-tab">
+                        <form id="signupForm" onsubmit="handleSignup(event)">
+                            <div class="mb-3">
+                                <label for="signup_prn" class="form-label">PRN</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fas fa-id-card text-primary"></i></span>
+                                    <input type="text" class="form-control" id="signup_prn" name="prn" placeholder="13-digit PRN" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="signup_name" class="form-label">Full Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fas fa-user text-primary"></i></span>
+                                    <input type="text" class="form-control" id="signup_name" name="name" placeholder="John Doe" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="signup_email" class="form-label">Email Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fas fa-envelope text-primary"></i></span>
+                                    <input type="email" class="form-control" id="signup_email" name="email" placeholder="student@example.com" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="signup_mobile" class="form-label">Mobile Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fas fa-phone text-primary"></i></span>
+                                    <input type="tel" class="form-control" id="signup_mobile" name="mobile" placeholder="10-digit Mobile No" pattern="[0-9]{10}" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="signup_mother_name" class="form-label">Mother's Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fas fa-female text-primary"></i></span>
+                                    <input type="text" class="form-control" id="signup_mother_name" name="mother_name" placeholder="Mother's Full Name" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="signup_password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fas fa-lock text-primary"></i></span>
+                                    <input type="password" class="form-control" id="signup_password" name="password" placeholder="Create Password" required>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg">Create Account <i class="fas fa-user-plus ms-2"></i></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1.5rem !important;
+        }
+        h2 {
+            font-size: 1.25rem !important;
+        }
+        .lead {
+            font-size: 1rem !important;
+        }
+    }
+    #pills-tab .nav-link {
+        color: #6c757d;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+    #pills-tab .nav-link.active {
+        color: #fff;
+        background-color: #0d6efd;
+        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+    }
+    #pills-tab .nav-link:not(.active):hover {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+</style>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+<script>
+    // Firebase Configuration
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAoIcFa1yjXV6rb3135Xo3ErEQGUkeA5z0", 
+        authDomain: "pranav-39b65.firebaseapp.com", 
+        projectId: "pranav-39b65", 
+        storageBucket: "pranav-39b65.firebasestorage.app", 
+        messagingSenderId: "169851277886", 
+        appId: "1:169851277886:web:bc0d376577717dab8bf76f", 
+        measurementId: "G-TYWGL7H72X" 
+    };
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+
+    // Google Login Handler
+    function handleGoogleLogin() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        
+        firebase.auth().signInWithPopup(provider)
+            .then((result) => {
+                const user = result.user;
+                // Send to backend
+                fetch('/api/google_login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: user.email,
+                        name: user.displayName,
+                        uid: user.uid
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirect;
+                    } else {
+                        alert('Login Failed: ' + data.message);
+                    }
+                });
+            }).catch((error) => {
+                alert("Google Sign In Error: " + error.message);
+            });
+    }
+
+    // Email/Password Signup Handler
+    function handleSignup(event) {
+        event.preventDefault();
+        const prn = document.getElementById('signup_prn').value;
+        const name = document.getElementById('signup_name').value;
+        const email = document.getElementById('signup_email').value;
+        const mobile = document.getElementById('signup_mobile').value;
+        const mother_name = document.getElementById('signup_mother_name').value;
+        const password = document.getElementById('signup_password').value;
+
+        firebase.auth().createUserWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                // User created in Firebase, now save to DB
+                const user = userCredential.user;
+                
+                fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prn: prn,
+                        name: name,
+                        email: email,
+                        mobile: mobile,
+                        mother_name: mother_name,
+                        password: password, // Optional: if we want to sync password to local DB
+                        uid: user.uid
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Account Created Successfully!');
+                        window.location.href = data.redirect;
+                    } else {
+                        // If DB save fails, maybe delete firebase user? 
+                        // For now just show error.
+                        alert('Database Error: ' + data.message);
+                    }
+                });
+            })
+            .catch((error) => {
+                alert("Signup Error: " + error.message);
+            });
+    }
+
+    // Email/Password Login Handler
+    function handleLogin(event) {
+        event.preventDefault();
+        const email = document.getElementById('login_email').value;
+        const password = document.getElementById('login_password').value;
+
+        // Special check for Admin
+        if (email === 'admin@dyp.edu') {
+            // Use legacy form submit logic by creating a form dynamically or using fetch
+            // Let's use fetch to a specific admin login endpoint or the unified api
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                    is_admin: true
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert('Admin Login Failed: ' + data.message);
+                }
+            });
+            return;
+        }
+
+        // Student Login via Firebase
+        firebase.auth().signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                const user = userCredential.user;
+                
+                fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        uid: user.uid
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirect;
+                    } else {
+                        alert('Login Failed: ' + data.message);
+                    }
+                });
+            })
+            .catch((error) => {
+                alert("Login Error: " + error.message);
+            });
+    }
+</script>
+{% endblock %}

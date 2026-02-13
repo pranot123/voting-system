@@ -1,0 +1,204 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="mt-4 animate__animated animate__fadeIn" id="result-container">
+    {% if state.winner_declared and president %}
+        <div class="row mb-4">
+            <div class="col-md-{% if vice_president %}6{% else %}12{% endif %} mb-3">
+                <div class="card border-0 shadow-lg animate__animated animate__tada h-100" style="background-color: #fff3cd;">
+                    <div class="card-body text-center p-3 p-md-5">
+                        <div class="mb-3 mb-md-4">
+                            {% if president.photo_url %}
+                                <img src="{{ president.photo_url }}" class="rounded-circle border border-4 border-warning shadow-lg winner-img" style="width: 120px; height: 120px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle border border-4 border-warning shadow-lg bg-light d-inline-flex align-items-center justify-content-center text-warning winner-img" style="width: 120px; height: 120px;">
+                                    <i class="fas fa-user fa-3x"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="display-3 mb-2">👑</div>
+                        <h2 class="h4 fw-bold text-dark">President</h2>
+                        <h1 class="text-success fw-bold h2 my-2">{{ president.name }}</h1>
+                        <p class="small text-muted mb-2">{{ president.class_name }} - {{ president.division }}</p>
+                        <div class="badge bg-success rounded-pill px-3 py-2">
+                            {{ president.votes }} Votes
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if vice_president %}
+            <div class="col-md-6 mb-3">
+                <div class="card border-0 shadow-lg animate__animated animate__fadeInRight h-100" style="background-color: #cff4fc;">
+                    <div class="card-body text-center p-3 p-md-5">
+                        <div class="mb-3 mb-md-4">
+                            {% if vice_president.photo_url %}
+                                <img src="{{ vice_president.photo_url }}" class="rounded-circle border border-4 border-info shadow-lg winner-img" style="width: 120px; height: 120px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle border border-4 border-info shadow-lg bg-light d-inline-flex align-items-center justify-content-center text-info winner-img" style="width: 120px; height: 120px;">
+                                    <i class="fas fa-user fa-3x"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="display-3 mb-2">🥈</div>
+                        <h2 class="h4 fw-bold text-dark">Vice President</h2>
+                        <h1 class="text-primary fw-bold h2 my-2">{{ vice_president.name }}</h1>
+                        <p class="small text-muted mb-2">{{ vice_president.class_name }} - {{ vice_president.division }}</p>
+                        <div class="badge bg-primary rounded-pill px-3 py-2">
+                            {{ vice_president.votes }} Votes
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="card shadow-lg animate__animated animate__fadeInUp">
+        <div class="card-header bg-white p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h3 class="mb-0 fw-bold text-primary"><i class="fas fa-chart-pie me-2"></i>Election Results</h3>
+                <p class="text-muted mb-0 small">Official count and statistics</p>
+            </div>
+            <div class="d-flex gap-2">
+                {% if session.get('user_id') %}
+                    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <i class="fas fa-print me-2"></i>Print / PDF
+                    </button>
+                    <button onclick="exportTableToCSV('election_results.csv')" class="btn btn-success btn-sm rounded-pill px-3">
+                        <i class="fas fa-file-csv me-2"></i>Export CSV
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="resultsTable">
+                    <thead class="bg-light text-secondary">
+                        <tr>
+                            <th class="px-4 py-3">Rank</th>
+                            <th class="px-4 py-3">Candidate</th>
+                            <th class="px-4 py-3 text-center">Votes</th>
+                            <th class="px-4 py-3" style="width: 30%;">Performance</th>
+                            <th class="px-4 py-3 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for candidate in candidates %}
+                        <tr class="{% if loop.index == 1 and state.winner_declared %}table-success{% elif loop.index == 2 and state.winner_declared %}table-info{% endif %}"></tr>
+
+                            <td class="px-4 fw-bold text-muted">
+                                {% if loop.index == 1 and state.winner_declared %}👑{% elif loop.index == 2 and state.winner_declared %}🥈{% else %}#{{ loop.index }}{% endif %}
+                            </td>
+                            <td class="px-4">
+                                <div class="d-flex align-items-center">
+                                    {% if candidate.photo_url %}
+                                    <img src="{{ candidate.photo_url }}" class="rounded-circle me-3 border" style="width: 40px; height: 40px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="rounded-circle me-3 bg-light d-flex align-items-center justify-content-center text-secondary border" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ candidate.name }}</div>
+                                        <div class="small text-muted">{{ candidate.class_name }} - {{ candidate.division }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 text-center">
+                                <span class="badge bg-white text-dark border shadow-sm rounded-pill px-3 py-2 fs-6">{{ candidate.votes }}</span>
+                            </td>
+                            <td class="px-4">
+                                {% if total_votes > 0 %}
+                                    {% set pct = (candidate.votes / total_votes * 100) | round(1) %}
+                                    <div class="d-flex align-items-center">
+                                        <span class="small fw-bold me-2 w-25 text-end">{{ pct }}%</span>
+                                        <div class="progress flex-grow-1" style="height: 8px; border-radius: 4px;">
+                                            <div class="progress-bar {% if loop.index == 1 %}bg-success{% elif loop.index == 2 %}bg-info{% else %}bg-secondary{% endif %}" role="progressbar" style="--width: {{ pct }}%; width: var(--width);"></div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted small">No votes yet</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 text-center">
+                                {% if loop.index == 1 and state.winner_declared %}
+                                    <span class="badge bg-success rounded-pill px-3"><i class="fas fa-crown me-1"></i>PRESIDENT</span>
+                                {% elif loop.index == 2 and state.winner_declared %}
+                                    <span class="badge bg-info text-dark rounded-pill px-3"><i class="fas fa-medal me-1"></i>VICE PRESIDENT</span>
+                                {% elif state.winner_declared %}
+                                    <span class="badge bg-secondary rounded-pill px-3">Participant</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark border rounded-pill px-3">Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if state.is_finished %}
+                <div class="alert alert-light border-top m-0 rounded-0 text-center text-muted">
+                    <i class="fas fa-lock me-2"></i> Election Results are Locked. Voting is disabled permanently.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function exportTableToCSV(filename) {
+    var csv = [];
+    var rows = document.querySelectorAll("table tr");
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = [], cols = rows[i].querySelectorAll("td, th");
+        
+        for (var j = 0; j < cols.length; j++) 
+            row.push(cols[j].innerText.replace(/,/g, "").replace(/\n/g, " ").trim()); // Clean commas and newlines
+        
+        csv.push(row.join(","));        
+    }
+
+    var csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+    var downloadLink = document.createElement("a");
+    downloadLink.download = filename;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+}
+</script>
+
+<style>
+    @media (max-width: 768px) {
+        .winner-img {
+            width: 80px !important;
+            height: 80px !important;
+        }
+        .display-3 {
+            font-size: 2.5rem !important;
+        }
+        .h2 {
+            font-size: 1.5rem !important;
+        }
+    }
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #result-container, #result-container * {
+            visibility: visible;
+        }
+        #result-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+        .btn {
+            display: none; /* Hide buttons in print */
+        }
+    }
+</style>
+{% endblock %}

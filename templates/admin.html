@@ -1,0 +1,232 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0 text-primary"><i class="fas fa-cogs me-2"></i>Admin Dashboard</h2>
+        <p class="text-muted mb-0">Manage elections, candidates, and students</p>
+    </div>
+    <div class="d-flex gap-2">
+        <span class="badge {% if state.is_active %}bg-success{% else %}bg-secondary{% endif %} p-2 d-flex align-items-center rounded-pill">
+            <i class="fas fa-circle me-1 small"></i> Status: {% if state.is_active %}Active{% else %}Inactive{% endif %}
+        </span>
+        <span class="badge {% if state.is_finished %}bg-danger{% else %}bg-info{% endif %} p-2 d-flex align-items-center rounded-pill">
+            <i class="fas fa-flag-checkered me-1 small"></i> {% if state.is_finished %}Finished{% else %}Ongoing{% endif %}
+        </span>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Controls -->
+    <div class="col-lg-4 animate__animated animate__fadeInLeft">
+        
+        <!-- Election Controls -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0 text-primary"><i class="fas fa-gamepad me-2"></i>Election Controls</h5>
+            </div>
+            <div class="card-body d-grid gap-2">
+                {% if not state.is_active and not state.is_finished %}
+                    <form action="/admin/toggle_election" method="POST">
+                        <input type="hidden" name="action" value="start">
+                        <button class="btn btn-success w-100 btn-lg shadow-sm"><i class="fas fa-play me-2"></i>Start Election</button>
+                    </form>
+                {% elif state.is_active %}
+                    <form action="/admin/toggle_election" method="POST">
+                        <input type="hidden" name="action" value="stop">
+                        <button class="btn btn-warning w-100 btn-lg shadow-sm"><i class="fas fa-stop me-2"></i>Stop Election</button>
+                    </form>
+                {% endif %}
+                
+                {% if state.is_finished and not state.winner_declared %}
+                     <form action="/admin/declare_winner" method="POST">
+                        <button class="btn btn-primary w-100 btn-lg shadow-sm"><i class="fas fa-trophy me-2"></i>Declare Winner</button>
+                    </form>
+                {% endif %}
+
+                <form action="/admin/toggle_election" method="POST" onsubmit="return confirm('WARNING: This will delete all votes! Continue?')">
+                    <input type="hidden" name="action" value="reset">
+                    <button class="btn btn-outline-danger w-100 mt-2"><i class="fas fa-redo-alt me-2"></i>Reset Election</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Upload Dataset -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0 text-primary"><i class="fas fa-file-upload me-2"></i>Upload Dataset</h5>
+            </div>
+            <div class="card-body">
+                <form action="/admin/upload_dataset" method="POST" enctype="multipart/form-data">
+                    <div class="row g-2 mb-3">
+                         <div class="col-4">
+                              <label class="form-label small text-muted">Class</label>
+                              <input type="text" name="class_name" class="form-control form-control-sm" required placeholder="SYBCA">
+                         </div>
+                         <div class="col-4">
+                              <label class="form-label small text-muted">Division</label>
+                              <input type="text" name="division" class="form-control form-control-sm" required placeholder="A">
+                         </div>
+                         <div class="col-4">
+                              <label class="form-label small text-muted">Year</label>
+                              <input type="text" name="year" class="form-control form-control-sm" required placeholder="2025">
+                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">CSV File</label>
+                        <input type="file" name="file" class="form-control" required accept=".csv">
+                    </div>
+                    <button type="submit" class="btn btn-info w-100"><i class="fas fa-cloud-upload-alt me-2"></i>Upload</button>
+                    <div class="mt-2 text-center">
+                        <small class="text-muted" style="font-size: 0.75rem;">Required: PRN, Name, Email, Mother Name</small>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Uploaded Datasets Summary -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0 text-primary"><i class="fas fa-database me-2"></i>Uploaded Datasets</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-3">Class</th>
+                                <th>Div</th>
+                                <th>Year</th>
+                                <th class="text-end pe-3">Students</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if datasets %}
+                                {% for ds in datasets %}
+                                <tr>
+                                    <td class="ps-3">{{ ds.class_name }}</td>
+                                    <td>{{ ds.division }}</td>
+                                    <td>{{ ds.year }}</td>
+                                    <td class="text-end pe-3">{{ ds[3] }}</td>
+                                    <td class="text-center">
+                                        <form action="/admin/delete_dataset" method="POST" onsubmit="return confirm('Are you sure you want to delete the dataset for {{ ds.class_name }} - {{ ds.division }}? This will remove all associated students.');">
+                                            <input type="hidden" name="class_name" value="{{ ds.class_name }}">
+                                            <input type="hidden" name="division" value="{{ ds.division }}">
+                                            <input type="hidden" name="year" value="{{ ds.year }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill py-0" title="Delete Dataset">
+                                                <i class="fas fa-trash-alt small"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-3">No datasets uploaded</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Candidate -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0 text-primary"><i class="fas fa-user-plus me-2"></i>Add Candidate</h5>
+            </div>
+            <div class="card-body">
+                <form action="/admin/add_candidate" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Candidate Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-user"></i></span>
+                            <input type="text" name="name" class="form-control" required placeholder="Full Name">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Candidate Photo</label>
+                        <input type="file" name="photo" class="form-control" accept="image/*">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                             <label class="form-label">Class</label>
+                             <input type="text" name="class_name" class="form-control" required placeholder="Class">
+                        </div>
+                        <div class="col-6">
+                             <label class="form-label">Division</label>
+                             <input type="text" name="division" class="form-control" required placeholder="Div">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-plus me-2"></i>Add Candidate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Results -->
+    <div class="col-lg-8 animate__animated animate__fadeInRight">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-primary"><i class="fas fa-chart-bar me-2"></i>Live Results</h5>
+                <a href="/results" class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt me-1"></i>Public View</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0 align-middle">
+                        <thead class="bg-light text-secondary">
+                            <tr>
+                                <th class="px-4 py-3">#</th>
+                                <th class="px-4 py-3">Candidate Name</th>
+                                <th class="px-4 py-3 text-center">Votes</th>
+                                <th class="px-4 py-3 text-end">Percentage</th>
+                                <th class="px-4 py-3 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set total_votes = candidates|sum(attribute='votes') %}
+                            {% for candidate in candidates %}
+                            <tr>
+                                <td class="px-4">{{ loop.index }}</td>
+                                <td class="px-4 fw-bold">{{ candidate.name }}</td>
+                                <td class="px-4 text-center">
+                                    <span class="badge bg-primary rounded-pill">{{ candidate.votes }}</span>
+                                </td>
+                                <td class="px-4 text-end">
+                                    {% if total_votes > 0 %}
+                                        {% set pct = (candidate.votes / total_votes * 100) | round(1) %}
+                                        <div class="d-flex align-items-center justify-content-end">
+                                            <span class="me-2">{{ pct }}%</span>
+                                            <div class="progress" style="width: 60px; height: 6px;">
+                                                <div class="progress-bar" role="progressbar" style="--width: {{ pct }}%; width: var(--width);"></div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">0%</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 text-center">
+                                    <form action="/admin/delete_candidate/{{ candidate.id }}" method="POST" onsubmit="return confirm('Are you sure you want to delete {{ candidate.name }}?');" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" title="Delete">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">
+                                    No candidates added yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

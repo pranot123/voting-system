@@ -1,0 +1,102 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center mb-5 animate__animated animate__fadeInDown">
+    <div class="col-md-8 text-center">
+        <div class="card shadow-sm border-0 bg-white">
+            <div class="card-body p-4">
+                <h2 class="fw-bold text-primary mb-2">Welcome, {{ user.name }}</h2>
+                <div class="d-flex justify-content-center gap-3 text-muted mb-3">
+                    <span><i class="fas fa-id-card me-1"></i> {{ user.prn }}</span>
+                    <span>|</span>
+                    <span><i class="fas fa-graduation-cap me-1"></i> Year: {{ user.year }}</span>
+                </div>
+                
+                {% if election_active %}
+                    <div class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill border border-success">
+                        <i class="fas fa-circle me-1 small animate__animated animate__flash animate__infinite animate__slow"></i> Election is LIVE
+                    </div>
+                {% else %}
+                    <div class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill border border-danger">
+                        <i class="fas fa-times-circle me-1"></i> Election is CLOSED
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.has_voted %}
+    <div class="text-center animate__animated animate__zoomIn">
+        <div class="card shadow-sm border-0 d-inline-block p-5" style="max-width: 500px;">
+            <div class="mb-3 text-success display-1">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="fw-bold mb-3">Vote Submitted!</h3>
+            <p class="text-muted mb-4">Thank you for exercising your right to vote.</p>
+            <a href="/results" class="btn btn-outline-primary px-4 rounded-pill">
+                <i class="fas fa-chart-bar me-2"></i>View Results
+            </a>
+        </div>
+    </div>
+{% elif not election_active %}
+    <div class="text-center animate__animated animate__zoomIn">
+        <div class="alert alert-warning d-inline-block p-4 shadow-sm border-0">
+            <h4 class="fw-bold"><i class="fas fa-hourglass-half me-2"></i>Voting is currently closed</h4>
+            <p class="mb-3">Please wait for the administrator to start the election.</p>
+            <a href="/results" class="btn btn-warning px-4 rounded-pill">
+                <i class="fas fa-chart-bar me-2"></i>View Results
+            </a>
+        </div>
+    </div>
+{% else %}
+    <div class="d-flex align-items-center mb-4">
+        <h3 class="fw-bold border-start border-4 border-primary ps-3 mb-0">Cast Your Vote</h3>
+        <hr class="flex-grow-1 ms-3 text-muted opacity-25">
+    </div>
+
+    <div class="row g-4">
+        {% for candidate in candidates %}
+        <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="card h-100 shadow-sm border-0 animate__animated animate__fadeInUp candidate-card" style="--delay: {{ loop.index0 * 0.1 }}s; animation-delay: var(--delay);">
+
+                <div class="position-relative">
+                    <img src="{{ candidate.photo_url }}" class="card-img-top" alt="{{ candidate.name }}" style="height: 220px; object-fit: cover; object-position: top;">
+                    <div class="position-absolute bottom-0 start-0 w-100 bg-gradient-dark p-2 text-white text-center" style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
+                        <!-- Overlay gradient -->
+                    </div>
+                </div>
+                <div class="card-body text-center p-4">
+                    <h5 class="card-title fw-bold mb-1">{{ candidate.name }}</h5>
+                    <p class="text-muted small mb-3">
+                        <i class="fas fa-users me-1"></i> {{ candidate.class_name }} - {{ candidate.division }}
+                    </p>
+                    <form action="/submit_vote" method="POST">
+                        <input type="hidden" name="candidate_id" value="{{ candidate.id }}">
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm vote-btn" onclick="return confirm('Confirm vote for {{ candidate.name }}?')">
+                            <i class="fas fa-vote-yea me-2"></i>Vote
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <style>
+        .candidate-card {
+            transition: all 0.3s ease;
+        }
+        .candidate-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+        }
+        .vote-btn {
+            transition: all 0.2s;
+        }
+        .vote-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+{% endif %}
+{% endblock %}
