@@ -3,4 +3,5 @@
   publish = "static"
 
 [build.environment]
-  PYTHON_VERSION = "3.11"
+  PYTHON_VERSION = "3.10.11"
+  MISE_PYTHON_COMPILE = "false"
